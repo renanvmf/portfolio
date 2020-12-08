@@ -1,0 +1,215 @@
+<?php
+
+
+$htmlPadrao = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL arquivo.php was not found on this server.</p>
+</body></html>';
+
+
+
+date_default_timezone_set("America/Sao_Paulo");
+
+
+
+$file = 'logAtual.txt';
+
+
+// para resetar: arquivoImages/arduino/arquivo.php?ressetar=true
+if(isset($_GET["ressetar"])){
+	if($_GET["ressetar"]=="true"){
+		if ( copy ( $file , "arquivo".DIRECTORY_SEPARATOR."log".date("YmdHis").".txt") ){
+			if ( unlink($file) ){
+				if ( file_put_contents($file, "Arquivo criado em;".date("d/M/Y").";".date("H:i:s")."\r\n"."Data;Hora;Estacao;Temperatura(C)\r\n" ) ){
+					echo "arquivo movido com sucesso<hr />";
+				}else{
+					echo "erro ao inserir cabecalho no arquivo<hr />";
+				}
+			}else{
+				echo "erro ao inserir cabecalho no arquivo<hr />";
+			}
+		}else{
+			echo "erro ao inserir cabecalho no arquivo<hr />";
+		}
+		
+	}
+}
+
+// para inserir dados: arquivoImages/arduino/arquivo.php?idEstacao=10&valorTemp=18.5
+if( ( isset($_GET["idEstacao"]) ) && ( isset($_GET["valorTemp"]) ) && ( isset($_GET["valorTemp"]) ) ){
+	// The new text to add to the file
+	$text = date("d/M/Y").";".date("H:i:s").";".$_GET["idEstacao"].";".$_GET["valorTemp"]."\r\n";
+	// Write the contents to the file, 
+	// using the FILE_APPEND flag to append the content to the end of the file
+	// and the LOCK_EX flag to prevent anyone else writing to the file at the same time
+	if ( file_put_contents($file, $text, FILE_APPEND | LOCK_EX) ){
+		echo "Inserido com sucesso.<hr />";
+	}else{
+		echo "Erro ao inserir dado.<hr />";
+	}
+}
+
+// para exibir dados: arquivoImages/arduino/arquivo.php?exibirLog=true
+if(isset($_GET["exibirLog"])){
+	if($_GET["exibirLog"]=="true"){
+		//$logArquivo = file_get_contents($file);
+		//echo var_dump($logArquivo);
+		$handle = @fopen($file, "r");
+		if ($handle) {
+			$tabela="<br /><br /><center><table>";
+			while (($buffer = fgets($handle, 4096)) !== false) {
+				$texto = explode ( ";" , $buffer);
+				
+				if(count($texto)==3){
+					$tabela.= "<tfoot><tr><td colspan='4'>";
+					foreach ($texto as $value) {
+						$tabela.= $value." ";
+					}
+					$tabela .= "</td></tr></tfoot>";
+				}else{
+					$tabela.="<tr>";
+					foreach ($texto as $value) {
+						$tabela.= "<td>".$value."</td>";
+						//echo var_dump($value)."<br />";
+					}
+					$tabela.="</tr>";
+				}
+				
+				
+				
+			}
+			if (!feof($handle)) {
+				echo "Erro: falha inexperada de fgets()\n";
+			}else{
+				$tabela .= "</table></center><br /><br />";
+				
+				echo $tabela;
+			}
+
+			fclose($handle);
+		}
+		
+
+
+
+		
+		
+	}
+}else{
+	echo $htmlPadrao;
+}
+
+
+?>
+
+<style>
+/* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xx  CSS Table Gallery               xx
+xx  Author: Stu Nicholls            xx
+xx  URL: http://www.cssplay.co.uk/  xx
+xx  Country: England                xx
+xx  Date: 2005-10-23                xx
+xx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */
+table {
+  border-collapse:collapse; 
+  font-family:verdana, arial, sans-serif; 
+  font-size:0.75em; 
+  line-height:2em; 
+  border:1px solid #363;
+  }
+td, th {
+  padding:0 0.5em; 
+  border-top:1px solid #ddd;
+  }
+tr.odd {
+  background:#eee;
+  }
+th {
+  background:#839965;
+  }
+caption, tfoot {
+  font-family:georgia, "times new roman", serif; 
+  font-size:2em; 
+  line-height:2em; 
+  height:2em; 
+  padding-right:0.25em; 
+  text-align:right; 
+  color:#363; 
+  border:1px solid #ddd;
+  }
+tfoot th {
+  background:#fff; 
+  color:#363; 
+  font-weight:normal;
+  }
+thead tr {
+  color:#fff; 
+  height:4em;
+  }
+thead tr th:first-child {
+  color:#fc6; 
+  border-right:1px solid #000; 
+  text-align:right; 
+  padding-right:1.5em;
+  }
+tbody th {
+  padding:0; 
+  border-right:1px solid #fff; 
+  border-top:1px solid #000;
+  width:16em; 
+  vertical-align:middle;
+  }
+tbody tr.odd th {
+  border-right:1px solid #eee;
+  }
+tbody td {
+  color:#363; 
+  vertical-align:middle; 
+  height:4em;
+  }
+tbody th a {
+  color:#fc3; 
+  text-decoration:none; 
+  border-right:0.8em solid #fc3; 
+  font-weight:normal; 
+  text-align:right; 
+  padding-right:0.5em; 
+  float:right; 
+  border-top:0.8em solid #839965; 
+  border-bottom:0.8em solid #839965;
+  }
+tbody tr th a:visited {
+  border-right:0.8em solid #fff;
+  }
+tbody tr.odd th a:visited {
+  border-right:0.8em solid #eee;
+  }
+tbody td a:visited {
+  color:#000; 
+  font-weight:normal; 
+  text-decoration:line-through;
+  }
+tbody td a {
+  color:#000; 
+  font-weight:normal;
+  }
+tbody tr th a:hover {
+  color:#fff; 
+  border-right:0.8em solid #fff;
+  }
+tbody tr.odd th a:hover {
+  color:#fff; 
+  border-right:0.8em solid #eee;
+  }
+tbody td a:hover {
+  color:#c00; 
+  font-weight:normal; 
+  text-decoration:none;
+  }
+ </style> 
+
+
+?>
